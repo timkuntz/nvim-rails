@@ -1,0 +1,125 @@
+-- local function load_module(module_name)
+--   local ok, module = pcall(require, module_name)
+--   assert(ok, string.format('dap-ruby dependency error: %s not installed', module_name))
+--   return module
+-- end
+
+return {
+  "suketa/nvim-dap-ruby",
+  dependencies = {
+    "mfussenegger/nvim-dap",
+    "rcarriga/nvim-dap-ui",
+    "theHamsta/nvim-dap-virtual-text",
+  },
+  init = function()
+    require('nvim-dap-virtual-text').setup()
+
+    local dap, dapui = require("dap"), require("dapui")
+    dap.listeners.after.event_initialized["dapui_config"] = function()
+      dapui.open()
+    end
+    dap.listeners.before.event_terminated["dapui_config"] = function()
+      dapui.close()
+    end
+    dap.listeners.before.event_exited["dapui_config"] = function()
+      dapui.close()
+    end
+
+    require('dap-ruby').setup()
+    vim.keymap.set('n', '<Leader>Bc', function() require('dap').continue() end, { desc = 'continue' })
+    vim.keymap.set('n', '<Leader>Bs', function() require('dap').step_over() end)
+    vim.keymap.set('n', '<Leader>Bi', function() require('dap').step_into() end)
+    vim.keymap.set('n', '<Leader>Bo', function() require('dap').step_out() end)
+    vim.keymap.set('n', '<Leader>Bb', function() require('dap').toggle_breakpoint() end)
+    vim.keymap.set('n', '<Leader>BB', function() require('dap').set_breakpoint() end)
+    vim.keymap.set('n', '<Leader>Bp', function()
+      require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: '))
+    end)
+    vim.keymap.set('n', '<Leader>Br', function() require('dap').repl.open() end)
+    vim.keymap.set('n', '<Leader>Bl', function() require('dap').run_last() end)
+    vim.keymap.set({ 'n', 'v' }, '<Leader>Bh', function()
+      require('dap.ui.widgets').hover()
+    end)
+    vim.keymap.set({ 'n', 'v' }, '<Leader>BP', function()
+      require('dap.ui.widgets').preview()
+    end)
+    vim.keymap.set('n', '<Leader>BF', function()
+      local widgets = require('dap.ui.widgets')
+      widgets.centered_float(widgets.frames)
+    end)
+    vim.keymap.set('n', '<Leader>BS', function()
+      local widgets = require('dap.ui.widgets')
+      widgets.centered_float(widgets.scopes)
+    end)
+
+    vim.keymap.set('n', '<Leader>BU', function()
+      require("dapui").setup()
+      require("dapui").toggle()
+    end, { desc = 'toggle debug UI' })
+
+    -- local dap = load_module("dap")
+    -- dap.configurations.ruby = {
+    --   {
+    --     type = 'ruby';
+    --     name = 'debug current file';
+    --     bundle = '';
+    --     request = 'attach';
+    --     command = "ruby";
+    --     script = "${file}";
+    --     port = 38698;
+    --     server = '127.0.0.1';
+    --     options = {
+    --       source_filetype = 'ruby';
+    --     };
+    --     localfs = true;
+    --     waiting = 1000;
+    --   },
+    --   {
+    --     type = 'ruby';
+    --     name = 'run rspec current_file';
+    --     bundle = 'bundle';
+    --     request = 'attach';
+    --     command = "test";
+    --     script = "${file}";
+    --     port = 38698;
+    --     server = '127.0.0.1';
+    --     options = {
+    --       source_filetype = 'ruby';
+    --     };
+    --     localfs = true;
+    --     waiting = 1000;
+    --   },
+    --   {
+    --     type = 'ruby';
+    --     name = 'run rspec current_file:current_line';
+    --     bundle = 'bundle';
+    --     request = 'attach';
+    --     command = "rspec";
+    --     script = "${file}";
+    --     port = 38698;
+    --     server = '127.0.0.1';
+    --     options = {
+    --       source_filetype = 'ruby';
+    --     };
+    --     localfs = true;
+    --     waiting = 1000;
+    --     current_line = true;
+    --   },
+    --   {
+    --     type = 'ruby';
+    --     name = 'run rspec';
+    --     bundle = 'bundle';
+    --     request = 'attach';
+    --     command = "rspec";
+    --     script = "./spec";
+    --     port = 38698;
+    --     server = '127.0.0.1';
+    --     options = {
+    --       source_filetype = 'ruby';
+    --     };
+    --     localfs = true;
+    --     waiting = 1000;
+    --   }
+    -- }
+  end,
+}

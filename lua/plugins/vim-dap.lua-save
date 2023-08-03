@@ -1,0 +1,88 @@
+return {
+  "mfussenegger/nvim-dap",
+  dependencies = {
+    "rcarriga/nvim-dap-ui",
+    "theHamsta/nvim-dap-virtual-text",
+    -- "suketa/nvim-dap-ruby",
+  },
+  init = function()
+    require("nvim-dap-virtual-text").setup()
+
+    local dap = require('dap')
+
+
+    dap.adapters.ruby = function(callback, config)
+      callback {
+        type = "server",
+        host = "127.0.0.1",
+        port = "38698",
+        executable = {
+          command = "bundle",
+          args = { "exec", "rdbg", "--nonstop", "--open", "--port", "38698",
+            "-c", "--", "bundle", "exec", "rails", "s", "-p", "3000",
+          },
+        },
+      }
+      -- callback {
+      --   type = "server",
+      --   host = "127.0.0.1",
+      --   port = "38698",
+      --   executable = {
+      --     command = "bundle",
+      --     args = { "exec", "rdbg", "--nonstop", "--open", "--port", "38698",
+      --       "-c", "--", "bundle", "exec", config.command, config.script,
+      --     },
+      --   },
+      -- }
+      --
+      -- bundle exec rdbg 
+      -- callback {
+      --   type = "server",
+      --   host = "127.0.0.1",
+      --   port = "${port}",
+      --   executable = {
+      --     command = "bundle",
+      --     args = { "exec", "rdbg", "-n", "--open", "--port", "${port}",
+      --       "-c", "--", "bundle", "exec", config.command, config.script,
+      --     },
+      --   },
+      -- }
+    end
+
+    dap.configurations.ruby = {
+      {
+        type = "ruby",
+        name = "debug current file",
+        request = "attach",
+        localfs = true,
+        command = "ruby",
+        script = "${file}",
+      },
+      {
+        type = "ruby",
+        name = "run current spec file",
+        request = "attach",
+        localfs = true,
+        command = "rspec",
+        script = "${file}",
+      },
+    }
+
+    vim.keymap.set('n', '<Leader>Bc', function() require('dap').continue() end, { desc = 'continue' })
+    vim.keymap.set('n', '<Leader>Bs', function() require('dap').step_over() end)
+    vim.keymap.set('n', '<Leader>Bi', function() require('dap').step_into() end)
+    vim.keymap.set('n', '<Leader>Bo', function() require('dap').step_out() end)
+    vim.keymap.set('n', '<Leader>Bb', function() require('dap').toggle_breakpoint() end)
+    vim.keymap.set('n', '<Leader>BB', function() require('dap').set_breakpoint() end)
+    vim.keymap.set('n', '<Leader>Bp', function()
+      require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: '))
+    end)
+    vim.keymap.set('n', '<Leader>Br', function() require('dap').repl.open() end)
+    vim.keymap.set('n', '<Leader>Bl', function() require('dap').run_last() end)
+
+    vim.keymap.set('n', '<Leader>BU', function()
+      require("dapui").setup()
+      require("dapui").toggle()
+    end, { desc = 'toggle debug UI' })
+  end
+}
